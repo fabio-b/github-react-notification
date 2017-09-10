@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Fetch from 'react-fetch';
 import Layout from './components/Layout';
+import GithubInfo from './components/GithubInfo';
 import List from './components/List';
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
@@ -9,46 +9,96 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            api: 'https://api.github.com/repos',
             repo: '',
             username: '',
+            eventType: '',
+            errorMessage: ''
         }
 
-        this.handleOnchange = this.handleOnchange.bind(this);
+        this.handleError = this.handleError.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.reset = this.reset.bind(this);
     }
 
     componentDidMount() {
-        this.getEvents();
-    }
 
-    handleOnchange(e) {
-        console.log(e.target.value);
     }
 
     getEvents() {
-        console.log('getting events');
+        fetch(this.state.api+'/'+this.state.username+'/'+this.state.repo+'/events').then(res => {
+            //convert instance to json object
+            return res.json();
+        }).then( events => {
+            if(!events.message) {
+                this.setState({
+                    events: events
+                })
+            }else{
+                this.handleError(events);
+            }
+        })
+    }
+
+    handleSubmit(value) {
+        const {repo, username, eventType, errMessage} = {...value};
+
+        if(repo && username){
+            this.setState({
+                repo: repo,
+                username: username,
+                eventType: eventType,
+                errorMessage: ''
+            }, () => {
+                this.getEvents();
+            })
+        }else{
+            this.setState({
+                errorMessage: errMessage
+            })
+        }
+    }
+
+    handleError(val) {
+        console.log(val.message);
+
+        if(val.message){
+            this.setState({
+                errorMessage: [this.state.api,this.state.repo,this.state.username].join('/')+' '+val.message
+            })
+        }
+    }
+
+    reset() {
+        this.setState({
+            repo: '',
+            username: '',
+            eventType: '',
+            errorMessage: ''
+        })
     }
 
     render() {
         return (
             <Layout>
                 <div className="container">
-                    <div className="row">
-                        <div className="col-xs-12">
-                            <label htmlFor='repo'>Repository Name</label>
-                            <input type='text' name='repo' className='form-control' placeholder='Type repo' onChange={this.handleOnchange} />
-                            <label htmlFor='username'>Username</label>
-                            <input type='text' name='username' className='form-control' placeholder='Type username associated with repo' onChange={this.handleOnchange} />
-
+                    {this.state.errorMessage &&
+                        <div className="alert alert-warning">
+                            <i className="glyphicon glyphicon-exclamation-sign"/>
+                            &nbsp;{this.state.errorMessage}
                         </div>
-                    </div>
-                    {this.state.repo && this.state.username &&
+                    }
+                    {this.state.repo && this.state.username ?
                         <div className="row">
-                            <div className="col-xs-12">
-                                <Fetch url="https://api.github.com/repos/zackify/react-fetch/events">
-                                    <List />
-                                </Fetch>
+                            <div className="col-xs-6 col-xs-offset-3">
+                                <button onClick={this.reset} className="btn btn-danger">Search again</button>
+                                {this.state.events &&
+                                <List eventType={this.state.eventType} events={this.state.events} />
+                                }
                             </div>
                         </div>
+                    :
+                    <GithubInfo onsubmit={this.handleSubmit} />
                     }
                 </div>
             </Layout>
