@@ -26,9 +26,9 @@ export default class GithubInfo extends React.Component {
                 <div className="row">
                     <div className="col-xs-6 col-xs-offset-3">
                         <label htmlFor='repo'>Repository Name</label>
-                        <input type='text' name='repo' className='form-control' placeholder='Type repo' ref={repo => {this.repo = repo;}} defaultValue="react-fetch" />
+                        <input type='text' name='repo' className='form-control' placeholder='Type repo' ref={repo => {this.repo = repo;}} />
                         <label htmlFor='username'>Username</label>
-                        <input type='text' name='username' className='form-control' placeholder='Type username associated with repo' ref={user => {this.user = user;}} defaultValue="zackify" />
+                        <input type='text' name='username' className='form-control' placeholder='Type username associated with repo' ref={user => {this.user = user;}} />
                         <label htmlFor='eventType'>Event Type</label>
                         <select name='eventType' className='form-control' ref={event => {this.eventType = event;}}>
                             <option value=''>All</option>
